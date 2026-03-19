@@ -8,7 +8,10 @@ C_SUB = "#B4D3D9"
 C_MAIN = "#BDA6CE"
 C_ACCENT = "#9B8EC7"
 
-# --- デザイン設定 (CSS) ---
+# --- 2. ページ設定とデザイン (CSS) ---
+st.set_page_config(page_title="Lagna Blueprint", page_icon="✨")
+
+# デザイン設定：アカウント名やメニューを完全に隠しつつ、指定のカラーを反映させます
 st.markdown(f"""
     <style>
     /* 1. ヘッダー（GitHubアイコン等）を完全に消去 */
@@ -26,10 +29,30 @@ st.markdown(f"""
         display: none !important;
     }}
 
+    /* 4. 余白の調整（ヘッダーを消した分、上に詰めすぎないようにする） */
+    .block-container {{
+        padding-top: 2rem !important;
+    }}
+
+    /* 5. 全体の背景色 */
+    .stApp {{
+        background-color: {C_BG};
+    }}
+    
+    /* 6. ラベルやタイトルの色 */
+    h1, h2, h3, label {{
+        color: {C_ACCENT} !important;
+        font-weight: bold;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
+
 # --- 3. ヘッダー画像の表示 ---
+# 画像ファイル名「Lagna blueprint.png」を表示させます
 try:
     st.image("Lagna blueprint.png", use_container_width=True)
 except:
+    # 画像が読み込めない場合のバックアップタイトル
     st.title("✨ Lagna Blueprint")
 
 # --- 1. 都道府県データの準備 ---
