@@ -36,7 +36,7 @@ st.markdown("""
     
     /* 5. ボタンのデザイン */
     .stButton>button {
-        background: linear-gradient(45deg, #4f46e5, #9333ea); /* 紫のグラデーション */
+        background: linear-gradient(45deg, #BDA6CE, #9B8EC7); /* 紫のグラデーション */
         color: white;
         font-size: 20px;
         height: 3em;
@@ -109,8 +109,8 @@ if st.button("計算を実行する"):
         # HTMLで直接デザインを指定します
         result_html = f"""
         <div style="
-            background-color: #1e1b4b; 
-            color: #fbbf24; 
+            background-color: #9B8EC7; 
+            color: #F2EAE0; 
             padding: 20px; 
             border-radius: 15px; 
             border: 2px solid #fbbf24; 
