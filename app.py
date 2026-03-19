@@ -2,45 +2,33 @@ import streamlit as st
 import swisseph as swe
 from datetime import datetime, time, timedelta
 
-# --- 1. カラーパレットの設定 ---
-C_BG = "#F2EAE0"     # 背景
-C_SUB = "#B4D3D9"    # 枠線・アクセント
-C_MAIN = "#BDA6CE"   # ボタン・装飾
-C_ACCENT = "#9B8EC7" # タイトル・強調
+# --- 1. カラーパレット ---
+C_BG = "#F2EAE0"
+C_SUB = "#B4D3D9"
+C_MAIN = "#BDA6CE"
+C_ACCENT = "#9B8EC7"
 
-# --- 2. ページ設定とデザイン (CSS) ---
-st.set_page_config(page_title="ジョーティッシュ鑑定所", page_icon="✨")
+# --- 2. デザイン (CSS) ---
+st.set_page_config(page_title="Lagna Blueprint", page_icon="✨")
 
 st.markdown(f"""
     <style>
     .stApp {{ background-color: {C_BG}; }}
     h1, h2, h3, label {{ color: {C_ACCENT} !important; font-weight: bold; }}
-    
-    /* 入力フィールドのデザイン */
-    .stDateInput div, .stTimeInput div, .stSelectbox div {{
-        background-color: white !important;
-        border-radius: 10px !important;
-    }}
-    
-    /* ボタンのデザイン */
     .stButton>button {{
         background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
-        color: white !important;
-        border-radius: 25px;
-        height: 3.5em;
-        width: 100%;
-        border: none;
-        font-weight: bold;
-        box-shadow: 0 4px 10px rgba(155, 142, 199, 0.3);
+        color: white !important; border-radius: 25px; border: none;
+        height: 3.5em; width: 100%; font-weight: bold;
     }}
     </style>
     """, unsafe_allow_html=True)
 
-# ロゴの表示
+# --- 3. ヘッダー画像の表示 ---
+# 画像ファイル名「Lagna blueprint.png」を直接指定
 try:
     st.image("Lagna blueprint.png", use_container_width=True)
 except:
-    st.title("✨ ジョーティッシュ鑑定所")
+    st.title("✨ ラグナ算出機")
 
 # --- 1. 都道府県データの準備 ---
 PREFECTURES = {
@@ -61,55 +49,46 @@ PREFECTURES = {
     "熊本県": [32.7898, 130.7417], "大分県": [33.2382, 131.6126], "宮崎県": [31.9077, 131.4202],
     "鹿児島県": [31.5601, 130.5580], "沖縄県": [26.2124, 127.6809]
 }
-# --- 4. 入力フォーム ---
-# 日付が入らない問題を解決するため、valueを指定し明示的にカレンダーを表示させます
-birth_date = st.date_input("1. 誕生日を選択してください", value=datetime(1990, 1, 1), min_value=datetime(1900, 1, 1))
-birth_time = st.time_input("2. 出生時刻 (1分単位)", value=time(12, 0), step=60)
-pref_name = st.selectbox("3. 出生地", list(PREFECTURES.keys()), index=0)
+# --- 5. 入力フォーム ---
+col1, col2 = st.columns(2)
+with col1:
+    birth_date = st.date_input("誕生日", value=datetime(1980, 7, 20))
+with col2:
+    birth_time = st.time_input("出生時刻", value=time(10, 58), step=60)
+
+pref_name = st.selectbox("出生地", list(PREFECTURES.keys()), index=0)
 
 if st.button("鑑定（ラグナ算出）を実行する"):
     try:
-        # 1. 時間の精密変換 (JST -> UT)
-        # 日本時間は世界時より9時間進んでいるため、正確に9時間を引きます
+        # 【修正の肝】世界時への変換とユリウス日の精密算出
         dt_local = datetime.combine(birth_date, birth_time)
         dt_ut = dt_local - timedelta(hours=9)
-        
-        # 2. ユリウス日の計算
-        # 小数点以下の時間まで精密に反映させます
-        decimal_hour = dt_ut.hour + dt_ut.minute/60.0 + dt_ut.second/3600.0
-        jd = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, decimal_hour)
+        jd_ut = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, dt_ut.hour + dt_ut.minute/60.0)
 
-        # 3. アヤナムシャの厳密設定 (1: Lahiri)
-        swe.set_sid_mode(1, 0, 0)
+        # アヤナムシャ（ラヒリ）の設定をリセットして再適用
+        swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
         
-        # 4. ラグナ（アセンダント）の計算
-        # flags=64 (SIDEREAL) でインド式計算を確定させます
+        # ラグナの算出
         lat, lon = PREFECTURES[pref_name]
-        res = swe.houses_ex(jd, lat, lon, b'W', flags=64)
-        lagna_deg = res[1][0] # 0-360度の生データ
+        # flags=swe.FLG_SIDEREAL (64) を指定し、サイドリアル方式で算出
+        res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=swe.FLG_SIDEREAL)
+        lagna_deg = res[1][0]
 
-        # 12星座の定義
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
         sign_index = int(lagna_deg / 30)
         deg_in_sign = lagna_deg % 30
-        minutes = int((deg_in_sign - int(deg_in_sign)) * 60)
 
-        # --- 5. 結果表示（指定カラー） ---
+        # 結果表示
         st.markdown("---")
         st.balloons()
-        
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
-                        border: 3px solid {C_MAIN}; text-align: center;
-                        box-shadow: 0 10px 25px rgba(155, 142, 199, 0.2);">
-                <p style="color: {C_MAIN}; margin: 0;">あなたのラグナは</p>
+                        border: 3px solid {C_MAIN}; text-align: center;">
                 <h1 style="color: {C_ACCENT}; font-size: 42px; margin: 10px 0;">【{zodiac_signs[sign_index]}】</h1>
-                <p style="color: {C_ACCENT}; font-size: 18px; margin: 0;">
-                    {int(deg_in_sign)}度 {minutes}分
-                </p>
+                <p style="color: {C_ACCENT}; font-size: 18px;">{int(deg_in_sign)}度 {int((deg_in_sign % 1) * 60)}分</p>
             </div>
         """, unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"計算エラーが発生しました: {e}")
+        st.error(f"エラー: {e}")
