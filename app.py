@@ -57,7 +57,7 @@ PREFECTURES = {
 birth_date = st.date_input(
     "1. 誕生日を選択", 
     value=datetime(1980, 1, 1),
-    min_value=datetime(1960, 1, 1),
+    min_value=datetime(1950, 1, 1),
     max_value=datetime.now()
 )
 birth_time = st.time_input("出生時刻", value=time(12, 0), step=60)
