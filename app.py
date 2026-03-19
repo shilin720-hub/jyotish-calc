@@ -25,6 +25,31 @@ st.markdown(f"""
         background-color: white !important;
     }}
     </style>
+    st.markdown(f"""
+    <style>
+    /* 1. 右上のツールバー（GitHubアイコン、Deployボタン等）を完全に消去 */
+    header[data-testid="stHeader"] {{
+        display: none !important;
+    }}
+
+    /* 2. 一番下のフッター（Streamlitロゴとアカウント名）を完全に消去 */
+    footer {{
+        display: none !important;
+    }}
+
+    /* 3. 右上の三本線メニューを完全に消去 */
+    #MainMenu {{
+        display: none !important;
+    }}
+
+    /* 4. アプリ全体の余白調整（ヘッダーを消した分、上に詰めすぎないようにする） */
+    .block-container {{
+        padding-top: 2rem !important;
+    }}
+
+    /* 背景色やその他のデザインは維持 */
+    .stApp {{ background-color: {C_BG}; }}
+    </style>
     """, unsafe_allow_html=True)
 
 # --- 3. ヘッダー画像の表示 ---
