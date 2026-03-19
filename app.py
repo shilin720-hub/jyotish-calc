@@ -81,27 +81,49 @@ birth_date = st.date_input("誕生日", datetime(1990, 1, 1))
 birth_time = st.time_input("出生時刻 (1分単位)", time(12, 0), step=60)
 pref_name = st.selectbox("出生地", list(PREFECTURES.keys()), index=0)
 
-if st.button("計算を実行する"):
+if st.button("鑑定（ラグナ算出）を実行する"):
     try:
-        # 1. 時間の補正 (日本時間から世界時UTへ)
+        # 1. タイムゾーンを考慮した世界時(UT)への変換
+        # 日本は標準時(GMT+9)なので、正確に9時間を引きます
         dt_local = datetime.combine(birth_date, birth_time)
         dt_ut = dt_local - timedelta(hours=9)
-        jd = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, dt_ut.hour + dt_ut.minute/60.0)
-
-        # 2. アヤナムシャの厳密な設定 (ラヒリ)
-        swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
         
-        # 3. アヤナムシャの値を取得（確認用）
-        ayan_value = swe.get_ayanamsa_ex(jd, flags=swe.FLG_SIDEREAL)[0]
+        # 2. ユリウス日の計算（秒単位まで精密に）
+        jd = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, 
+                        dt_ut.hour + dt_ut.minute/60.0 + dt_ut.second/3600.0)
 
-        # 4. ハウスとアセンダント(ラグナ)の算出
-        # flags=swe.FLG_SIDEREAL を明示的に指定してインド式計算を強制します
-        res = swe.houses_ex(jd, PREFECTURES[pref_name][0], PREFECTURES[pref_name][1], b'W', flags=swe.FLG_SIDEREAL)
-        lagna_deg_raw = res[1][0] # これがアヤナムシャ適用済みのラグナ度数
+        # 3. アヤナムシャ（補正値）を「ラヒリ」に固定
+        # 第1引数: 1 (SIDM_LAHIRI), 第2・3引数: 0 (標準設定)
+        swe.set_sid_mode(1, 0, 0)
+        
+        # 4. ラグナ（アセンダント）の計算
+        # flags=64 は SIDEREAL（恒星時）計算を強制する命令です
+        res = swe.houses_ex(jd, PREFECTURES[pref_name][0], PREFECTURES[pref_name][1], b'W', flags=64)
+        lagna_deg_raw = res[1][0] # 0〜360度の生データ
 
+        # 12星座の定義
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
         sign_index = int(lagna_deg_raw / 30)
+
+        # --- 結果表示（デザイン込） ---
+        st.markdown("---")
+        result_text = f"あなたのラグナは 【{zodiac_signs[sign_index]}】 です"
+        
+        # HTML/CSSで結果を装飾
+        st.markdown(f"""
+            <div style="background-color: #1e1b4b; color: #fbbf24; padding: 20px; 
+                        border-radius: 15px; border: 2px solid #fbbf24; text-align: center;
+                        font-size: 24px; font-weight: bold;">
+                {result_text}
+            </div>
+        """, unsafe_allow_html=True)
+        
+        # ずれを確認するための数値デバッグ
+        st.write(f"<p style='color: gray; text-align: center;'>算出度数: {lagna_deg_raw:.2f}°（{zodiac_signs[sign_index]} {lagna_deg_raw % 30:.2f}°）</p>", unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error(f"計算エラーが発生しました: {e}")
 
         # 結果表示
         st.balloons()
