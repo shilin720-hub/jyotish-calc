@@ -2,6 +2,30 @@ import streamlit as st
 import swisseph as swe
 from datetime import datetime, time, timedelta
 
+# --- 1. ページ設定とデザイン (CSS) ---
+st.set_page_config(page_title="ジョーティッシュ鑑定所", page_icon="✨")
+
+# 背景色やボタンのデザインをアドビ風に整える設定
+st.markdown("""
+    <style>
+    .stApp {
+        background-color: #fdfaf5;
+    }
+    .stButton>button {
+        background-color: #2c3e50;
+        color: white;
+        border-radius: 10px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- 2. ロゴ画像の読み込み ---
+# GitHubに「logo.png」という名前で画像をアップロードしておくと表示されます
+try:
+    st.image("logo.png", use_container_width=True)
+except:
+    st.title("✨ ジョーティッシュ鑑定所")
+
 # --- 1. 都道府県データの準備 ---
 PREFECTURES = {
     "北海道": [43.0641, 141.3469], "青森県": [40.8244, 140.7400], "岩手県": [39.7036, 141.1527],
