@@ -62,7 +62,8 @@ birth_date = st.date_input(
 birth_time = st.time_input("2. 出生時刻", value=time(10, 58), step=60)
 pref_name = st.selectbox("3. 出生地", list(PREFECTURES.keys()), index=0)
 
-if st.button("鑑定を実行する"):
+ボタンの文字を「鑑定結果を表示する」に変更
+if st.button("鑑定結果を表示する"):
     try:
         # 時刻計算 (JST -> UT)
         dt_local = datetime.combine(birth_date, birth_time)
