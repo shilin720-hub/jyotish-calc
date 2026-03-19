@@ -83,80 +83,58 @@ pref_name = st.selectbox("出生地", list(PREFECTURES.keys()), index=0)
 
 if st.button("鑑定（ラグナ算出）を実行する"):
     try:
-        # 1. タイムゾーンを考慮した世界時(UT)への変換
-        # 日本は標準時(GMT+9)なので、正確に9時間を引きます
+        # 1. 時間の精密計算 (日本時間 JST -> 世界時 UT)
         dt_local = datetime.combine(birth_date, birth_time)
         dt_ut = dt_local - timedelta(hours=9)
         
-        # 2. ユリウス日の計算（秒単位まで精密に）
+        # ユリウス日を小数点以下まで精密に算出
         jd = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, 
                         dt_ut.hour + dt_ut.minute/60.0 + dt_ut.second/3600.0)
 
-        # 3. アヤナムシャ（補正値）を「ラヒリ」に固定
-        # 第1引数: 1 (SIDM_LAHIRI), 第2・3引数: 0 (標準設定)
+        # 2. アヤナムシャの厳密な設定
+        # 第1引数 1: SIDM_LAHIRI (ラヒリ)
+        # 第2・3引数 0: 標準の Chitra Paksha (チトラ・パクシャ) 定義を使用
         swe.set_sid_mode(1, 0, 0)
         
-        # 4. ラグナ（アセンダント）の計算
-        # flags=64 は SIDEREAL（恒星時）計算を強制する命令です
-        res = swe.houses_ex(jd, PREFECTURES[pref_name][0], PREFECTURES[pref_name][1], b'W', flags=64)
-        lagna_deg_raw = res[1][0] # 0〜360度の生データ
+        # 現在の計算に使用されているアヤナムシャの値を抽出（確認用）
+        ayanamsa = swe.get_ayanamsa_ex(jd)[0]
 
-        # 12星座の定義
+        # 3. ラグナ（アセンダント）の算出
+        # flags=64: サイドリアル（恒星時）計算を有効化
+        # b'W': Whole Sign (1星座1ハウス) 方式を指定
+        res = swe.houses_ex(jd, PREFECTURES[pref_name][0], PREFECTURES[pref_name][1], b'W', flags=64)
+        
+        # res[1][0] がラグナの絶対度数（0〜360度）
+        lagna_deg_raw = res[1][0]
+
+        # 12星座のリスト
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
+        
+        # 星座番号と、その星座内での度数を計算
         sign_index = int(lagna_deg_raw / 30)
+        degree_in_sign = lagna_deg_raw % 30
+        
+        # 分と秒まで計算して精度を上げる
+        minutes = int((degree_in_sign - int(degree_in_sign)) * 60)
 
         # --- 結果表示（デザイン込） ---
         st.markdown("---")
-        result_text = f"あなたのラグナは 【{zodiac_signs[sign_index]}】 です"
+        st.balloons()
         
-        # HTML/CSSで結果を装飾
         st.markdown(f"""
             <div style="background-color: #1e1b4b; color: #fbbf24; padding: 20px; 
-                        border-radius: 15px; border: 2px solid #fbbf24; text-align: center;
-                        font-size: 24px; font-weight: bold;">
-                {result_text}
+                        border-radius: 15px; border: 2px solid #fbbf24; text-align: center;">
+                <h2 style="color: #fbbf24; margin: 0;">あなたのラグナは</h2>
+                <h1 style="color: #fbbf24; font-size: 40px; margin: 10px 0;">【{zodiac_signs[sign_index]}】</h1>
+                <p style="margin: 0;">度数: {int(degree_in_sign)}度 {minutes}分</p>
             </div>
         """, unsafe_allow_html=True)
         
-        # ずれを確認するための数値デバッグ
-        st.write(f"<p style='color: gray; text-align: center;'>算出度数: {lagna_deg_raw:.2f}°（{zodiac_signs[sign_index]} {lagna_deg_raw % 30:.2f}°）</p>", unsafe_allow_html=True)
+        # デバッグ情報（これがあれば、なぜずれているかプロが判断できます）
+        st.write(f"<p style='color: gray; text-align: center; font-size: 12px; margin-top: 10px;'>"
+                 f"適用アヤナムシャ: {ayanamsa:.4f}° / 出生地緯経度: {PREFECTURES[pref_name]}</p>", 
+                 unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"計算エラーが発生しました: {e}")
-
-        # 結果表示
-        st.balloons()
-        
-        # HTMLで直接デザインを指定します
-        result_html = f"""
-        <div style="
-            background-color: #9B8EC7; 
-            color: #F2EAE0; 
-            padding: 20px; 
-            border-radius: 15px; 
-            border: 2px solid #fbbf24; 
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            box-shadow: 0px 4px 15px rgba(0,0,0,0.3);
-        ">
-            あなたのラグナは 【{zodiac_signs[sign_index]}】 です
-        </div>
-        """
-        st.markdown(result_html, unsafe_allow_html=True)
-        
-        # 詳細情報の表示
-        st.write(f"<p style='color: #e2e8f0; text-align: center;'>詳細度数: {lagna_deg_raw % 30:.2f}° / 出生地: {pref_name}</p>", unsafe_allow_html=True)
-        
-        # ずれを確認するための詳細情報
-        col1, col2 = st.columns(2)
-        with col1:
-            st.metric("ラグナ度数（星座内）", f"{lagna_deg_raw % 30:.2f}°")
-        with col2:
-            st.metric("適用アヤナムシャ", f"{ayan_value:.2f}°")
-        
-        st.write("※西洋占星術（サヤナ）とは約24度異なります。")
-
-    except Exception as e:
-        st.error(f"計算エラー: {e}")
+        st.error(f"計算にエラーが発生しました: {e}")
