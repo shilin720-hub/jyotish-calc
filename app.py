@@ -1,12 +1,3 @@
-洗練されたカラーパレットのご提示、ありがとうございます。
-淡いベージュから高貴な紫へのグラデーション（#F2EAE0, #B4D3D9, #BDA6CE, #9B8EC7）は、ジョーティッシュの神秘性と現代的な美しさが調和して、とても素敵ですね。
-
-この4色を背景、ボタン、入力欄、結果表示にバランスよく配置した「完全版コード」を作成しました。
-
-ステップ1：app.py を以下の内容に書き換える
-GitHubで app.py を開き、このデザインコードを丸ごと貼り付けて保存（Commit）してください。
-
-Python
 import streamlit as st
 import swisseph as swe
 from datetime import datetime, time, timedelta
