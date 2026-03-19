@@ -9,7 +9,7 @@ st.set_page_config(page_title="ジョーティッシュ鑑定所", page_icon="�
 st.markdown("""
     <style>
     .stApp {
-        background-color: #f1f1f2;
+        background-color: #f1f1f1;
     }
     .stButton>button {
         background-color: #1995ad;
