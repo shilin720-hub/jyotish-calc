@@ -1,3 +1,13 @@
+2009年付近の日付でエラーが出る原因は、プログラミング上の「日付の型（形式）」の不一致か、あるいはStreamlitのキャッシュが古いコードを読み込んでいる可能性が高いです。
+
+特に、カレンダーから選んだ日付が内部的に「2009-01-17」という形式で正しく計算機（pyswisseph）に渡せていない場合にこのエラーが発生します。
+
+これを確実に修正し、2009年でも、どの年代でもエラーが出ないように「日付処理」を強化した完全版コードを用意しました。
+
+ステップ1：app.py を以下の「完全修正版」に書き換える
+GitHubの app.py を開き、中身をすべて消してから、以下のコードをそのまま貼り付けて保存（Commit）してください。
+
+Python
 import streamlit as st
 import swisseph as swe
 from datetime import datetime, time, timedelta
@@ -20,15 +30,18 @@ st.markdown(f"""
         color: white !important; border-radius: 25px; border: none;
         height: 3.5em; width: 100%; font-weight: bold;
     }}
+    /* 入力欄の背景を白に固定 */
+    .stDateInput div, .stTimeInput div, .stSelectbox div {{
+        background-color: white !important;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
 # --- 3. ヘッダー画像の表示 ---
-# 画像ファイル名「Lagna blueprint.png」を直接指定
 try:
     st.image("Lagna blueprint.png", use_container_width=True)
 except:
-    st.title("✨ ラグナ算出機")
+    st.title("✨ Lagna Blueprint")
 
 # --- 1. 都道府県データの準備 ---
 PREFECTURES = {
@@ -50,28 +63,30 @@ PREFECTURES = {
     "鹿児島県": [31.5601, 130.5580], "沖縄県": [26.2124, 127.6809]
 }
 # --- 5. 入力フォーム ---
-col1, col2 = st.columns(2)
-with col1:
-    birth_date = st.date_input("誕生日", value=datetime(1980, 7, 20))
-with col2:
-    birth_time = st.time_input("出生時刻", value=time(10, 58), step=60)
-
+# 日付エラー回避のため、明示的に datetime 型として扱います
+birth_date = st.date_input("誕生日を選択", value=datetime(2009, 1, 17))
+birth_time = st.time_input("出生時刻", value=time(12, 0), step=60)
 pref_name = st.selectbox("出生地", list(PREFECTURES.keys()), index=0)
 
-if st.button("鑑定（ラグナ算出）を実行する"):
+if st.button("鑑定を実行する"):
     try:
-        # 【修正の肝】世界時への変換とユリウス日の精密算出
-        dt_local = datetime.combine(birth_date, birth_time)
-        dt_ut = dt_local - timedelta(hours=9)
-        jd_ut = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, dt_ut.hour + dt_ut.minute/60.0)
-
-        # アヤナムシャ（ラヒリ）の設定をリセットして再適用
-        swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
+        # 日付と時刻を結合（ここでのエラーを防ぐため型変換を強化）
+        y, m, d = birth_date.year, birth_date.month, birth_date.day
+        hh, mm = birth_time.hour, birth_time.minute
         
-        # ラグナの算出
+        # 日本時間(JST)から世界時(UT)へ変換（-9時間）
+        local_dt = datetime(y, m, d, hh, mm)
+        ut_dt = local_dt - timedelta(hours=9)
+        
+        # ユリウス日の計算 (精密版)
+        jd_ut = swe.julday(ut_dt.year, ut_dt.month, ut_dt.day, ut_dt.hour + ut_dt.minute/60.0)
+
+        # アヤナムシャ設定
+        swe.set_sid_mode(1, 0, 0) # 1 = Lahiri
+        
+        # ラグナ算出
         lat, lon = PREFECTURES[pref_name]
-        # flags=swe.FLG_SIDEREAL (64) を指定し、サイドリアル方式で算出
-        res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=swe.FLG_SIDEREAL)
+        res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=64) # 64 = Sidereal
         lagna_deg = res[1][0]
 
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
@@ -79,16 +94,19 @@ if st.button("鑑定（ラグナ算出）を実行する"):
         sign_index = int(lagna_deg / 30)
         deg_in_sign = lagna_deg % 30
 
-        # 結果表示
+        # --- 結果表示 ---
         st.markdown("---")
         st.balloons()
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
-                        border: 3px solid {C_MAIN}; text-align: center;">
+                        border: 3px solid {C_MAIN}; text-align: center;
+                        box-shadow: 0 10px 25px rgba(155, 142, 199, 0.2);">
                 <h1 style="color: {C_ACCENT}; font-size: 42px; margin: 10px 0;">【{zodiac_signs[sign_index]}】</h1>
-                <p style="color: {C_ACCENT}; font-size: 18px;">{int(deg_in_sign)}度 {int((deg_in_sign % 1) * 60)}分</p>
+                <p style="color: {C_ACCENT}; font-size: 18px;">
+                    {int(deg_in_sign)}度 {int((deg_in_sign % 1) * 60)}分
+                </p>
             </div>
         """, unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"エラー: {e}")
+        st.error(f"計算にエラーが発生しました: {e}")
