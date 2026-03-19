@@ -2,19 +2,47 @@ import streamlit as st
 import swisseph as swe
 from datetime import datetime, time, timedelta
 
-# --- 1. ページ設定とデザイン (CSS) ---
-st.set_page_config(page_title="ジョーティッシュ鑑定所", page_icon="✨")
+import streamlit as st
+# (中略：他のインポートはそのまま)
 
-# 背景色やボタンのデザインをアドビ風に整える設定
+# --- デザイン：色とスタイルのカスタマイズ ---
 st.markdown("""
     <style>
+    /* 1. 全体の背景色 */
     .stApp {
-        background-color: #f1f1f1;
+        background-color: #0f172a; /* 深い夜空のような紺色 */
     }
+
+    /* 2. 入力ボックス（枠）の色 */
+    div[data-baseweb="select"] > div, 
+    div[data-baseweb="input"] > div {
+        background-color: #1e293b !important; /* 入力欄の中を少し明るい紺に */
+        color: #f1f5f9 !important; /* 入力する文字を白っぽく */
+        border: 1px solid #38bdf8 !important; /* 枠線を水色に */
+    }
+
+    /* 3. ラベル（「誕生日」などの文字）の色 */
+    .stMarkdown p, label {
+        color: #e2e8f0 !important;
+        font-weight: bold;
+    }
+
+    /* 4. 出力される鑑定結果の文字色 */
+    .stAlert {
+        background-color: #1e1b4b !important; /* 結果表示の背景 */
+        color: #fbbf24 !important; /* 星座の名前などを「金箔」のような黄色に */
+        border: 2px solid #fbbf24 !important;
+    }
+    
+    /* 5. ボタンのデザイン */
     .stButton>button {
-        background-color: #1995ad;
+        background: linear-gradient(45deg, #4f46e5, #9333ea); /* 紫のグラデーション */
         color: white;
-        border-radius: 10px;
+        font-size: 20px;
+        height: 3em;
+        width: 100%;
+        border-radius: 30px;
+        border: none;
     }
     </style>
     """, unsafe_allow_html=True)
