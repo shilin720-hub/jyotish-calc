@@ -17,7 +17,7 @@ st.markdown("""
     div[data-baseweb="select"] > div, 
     div[data-baseweb="input"] > div {
         background-color: #B4D3D9 !important; /* 入力欄の中を水色に */
-        color: #f1f5f9 !important; /* 入力する文字を白っぽく */
+        color: #9B8EC7 !important; /* 入力する文字を白っぽく */
         border: 1px solid #BDA6CE !important; /* 枠線を薄紫色に */
     }
 
@@ -30,7 +30,7 @@ st.markdown("""
     /* 4. 出力される鑑定結果の文字色 */
     .stAlert {
         background-color: #9B8EC7 !important; /* 結果表示の背景 */
-        color: #fbbf24 !important; /* 星座の名前などを「金箔」のような黄色に */
+        color: #F2EAE0 !important; /* 星座の名前などを「金箔」のような黄色に */
         border: 2px solid #fbbf24 !important;
     }
     
