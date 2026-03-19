@@ -27,7 +27,7 @@ if st.button("ラグナを算出する"):
     # 計算実行（エラー回避のためフラグを最小限にしています）
     try:
         # 第4引数の 1 はサイドリアル（恒星時）計算を意味します
-        res = swe.houses_ex(jd, lat, lon, b'W', flag=1)
+        res = swe.houses_ex(jd, lat, lon, b'W', flags=1)
         ascmc = res[1] # アセンダント情報
         
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
