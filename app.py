@@ -13,17 +13,46 @@ st.set_page_config(page_title="Lagna Blueprint", page_icon="✨")
 
 st.markdown(f"""
     <style>
+    /* 1. 基本設定（ヘッダー・フッター非表示など） */
     header[data-testid="stHeader"], footer, #MainMenu {{ display: none !important; }}
     .stAppToolbar {{ display: none !important; }}
     .block-container {{ padding-top: 2rem !important; }}
     .stApp {{ background-color: {C_BG}; }}
     h1, h2, h3, label {{ color: {C_ACCENT} !important; font-weight: bold; }}
+
+    /* 2. 鑑定するボタンの設定 */
     .stButton>button {{
         background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
         color: white !important; border-radius: 25px; border: none;
         height: 3.5em; width: 100%; font-weight: bold;
     }}
-    .stDateInput div, .stTimeInput div, .stSelectbox div {{ background-color: white !important; }}
+
+    /* 3. 入力フォームの背景色 */
+    .stDateInput div, .stTimeInput div, .stSelectbox div {{ 
+        background-color: white !important; 
+    }}
+
+    /* --- ここから追加：スマホ対策 --- */
+    /* 入力フォームのラベル（誕生日などの文字）をスマホでも強制表示 */
+    label[data-testid="stWidgetLabel"] {{
+        display: block !important;
+        visibility: visible !important;
+        color: {C_ACCENT} !important;
+    }}
+
+    /* スマホで入力欄が小さくなりすぎないよう調整 */
+    @media (max-width: 640px) {{
+        .block-container {{
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }}
+        /* 入力時の文字サイズを調整（ズーム防止） */
+        input {{
+            font-size: 16px !important;
+        }}
+    }}
+    /* --- 追加ここまで --- */
+    
     </style>
     """, unsafe_allow_html=True)
 
