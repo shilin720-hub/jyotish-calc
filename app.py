@@ -108,7 +108,7 @@ if st.button("鑑定結果を表示する"):
                 <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px; opacity: 0.8;">
                     ✨ さらに詳しく知りたい方はこちら ✨
                 </p>
-                <a href="{shop_url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">
+                <a href="{shop_url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important; color: {C_BG} !important;">
                     <span style="
                         background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
                         color: {C_BG} !important; 
@@ -119,7 +119,9 @@ if st.button("鑑定結果を表示する"):
                         display: inline-block;
                         box-shadow: 0 4px 12px rgba(155, 142, 199, 0.4);
                         text-decoration: none !important;
+                        /* ブラウザの自動色付けを徹底的に上書き */
                         -webkit-text-fill-color: {C_BG} !important;
+                        -moz-text-fill-color: {C_BG} !important;
                     ">
                         個人鑑定を申し込む
                     </span>
