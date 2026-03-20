@@ -39,7 +39,7 @@ st.markdown(f"""
 
 # --- 3. ヘッダー画像の表示 ---
 try:
-    st.image("Lagna.png", use_container_width=True)
+    st.image("LagnaTOP.png", use_container_width=True)
 except:
     st.title("✨ Lagna Blueprint")
 
