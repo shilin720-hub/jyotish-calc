@@ -41,8 +41,8 @@ try:
 except:
     st.title("✨ Lagna Blueprint")
 
-# --- 4. 都道府県データ ---
-PREFECTURES = {{
+# --- 4. 都道府県データ（波括弧は1つずつで正解です） ---
+PREFECTURES = {
     "北海道": [43.0641, 141.3469], "青森県": [40.8244, 140.7400], "岩手県": [39.7036, 141.1527],
     "宮城県": [38.2682, 140.8694], "秋田県": [39.7186, 140.1024], "山形県": [38.2554, 140.3396],
     "福島県": [37.7503, 140.4675], "茨城県": [36.3418, 140.4468], "栃木県": [36.5657, 139.8835],
@@ -59,7 +59,7 @@ PREFECTURES = {{
     "福岡県": [33.6064, 130.4182], "佐賀県": [33.2635, 130.2998], "長崎県": [32.7448, 129.8737],
     "熊本県": [32.7898, 130.7417], "大分県": [33.2382, 131.6126], "宮崎県": [31.9111, 131.4239],
     "鹿児島県": [31.5967, 130.5571], "沖縄県": [26.2124, 127.6809]
-}}
+}
 
 # --- 5. 入力フォーム ---
 birth_date = st.date_input("1. 誕生日を選択", value=datetime(1980, 7, 20))
@@ -75,10 +75,11 @@ if st.button("鑑定結果を表示する"):
 
         lat, lon = PREFECTURES[pref_name]
         
-        # 精密計算：フラグ64(SIDEREAL)を使用して、直接インド式のアセンダント角度を算出
+        # 精密計算：Lahiri(インド式)を固定してハウス算出
         swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
-        # houses_ex の戻り値の [1][0] がアセンダント（ラグナ）の角度です
-        res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=64)
+        # houses_exの引数：(ユリウス日, 緯度, 経度, ハウスシステム'W'など, フラグ64)
+        # res[1][0]がアセンダント（ラグナ）
+        res = swe.houses_ex(jd_ut, lat, lon, b'P', flags=64)
         lagna_deg = res[1][0]
 
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
@@ -112,24 +113,38 @@ if st.button("鑑定結果を表示する"):
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
                         border: 3px solid {C_MAIN}; text-align: center; margin-bottom: 20px;">
-                <p style="color: {C_MAIN}; font-weight: bold;">【鑑定結果】</p>
-                <p style="color: {C_ACCENT};">あなたのラグナは</p>
-                <h1 style="color: {C_ACCENT}; font-size: 42px;">{sign_name}</h1>
-                <p style="color: {C_ACCENT}; font-size: 18px;">{int(deg_in_sign)}度 {int((deg_in_sign % 1) * 60)}分</p>
+                <p style="color: {C_MAIN}; font-weight: bold; margin-bottom: 5px;">【鑑定結果】</p>
+                <p style="color: {C_ACCENT}; margin: 0;">あなたのラグナは</p>
+                <h1 style="color: {C_ACCENT}; font-size: 42px; margin: 10px 0;">{sign_name}</h1>
+                <p style="color: {C_ACCENT}; font-size: 18px; margin: 0;">
+                    {int(deg_in_sign)}度 {int((deg_in_sign % 1) * 60)}分
+                </p>
             </div>
             
             <div style="text-align: center; margin: 30px 10px; color: {C_ACCENT};">
-                <p style="font-size: 15px;">🌙 <b>{sign_name}のあなたへのメッセージ</b></p>
-                <p style="font-size: 14px; line-height: 1.6;">{advice}</p>
+                <p style="font-size: 15px; margin-bottom: 8px;">🌙 <b>{sign_name}のあなたへのメッセージ</b></p>
+                <p style="font-size: 14px; line-height: 1.6; opacity: 0.9;">
+                    {advice}
+                </p>
             </div>
 
             <div style="text-align: center; margin-top: 40px;">
-                <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px;">✨ さらに詳しく知りたい方はこちら ✨</p>
-                <a href="{shop_url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
-                    <span style="background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
-                        color: {C_BG} !important; padding: 12px 30px; border-radius: 50px;
-                        font-weight: 800; font-size: 16px; display: inline-block;
-                        -webkit-text-fill-color: {C_BG} !important;">
+                <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px; opacity: 0.8;">
+                    ✨ さらに詳しく知りたい方はこちら ✨
+                </p>
+                <a href="{shop_url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">
+                    <span style="
+                        background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
+                        color: {C_BG} !important; 
+                        padding: 12px 30px; 
+                        border-radius: 50px;
+                        font-weight: 800; 
+                        font-size: 16px; 
+                        display: inline-block;
+                        box-shadow: 0 4px 12px rgba(155, 142, 199, 0.4);
+                        text-decoration: none !important;
+                        -webkit-text-fill-color: {C_BG} !important;
+                    ">
                         個人鑑定を申し込む
                     </span>
                 </a>
@@ -137,4 +152,4 @@ if st.button("鑑定結果を表示する"):
         """, unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"エラーが発生しました: {{e}}")
+        st.error(f"エラーが発生しました。入力内容を確認してください。")
