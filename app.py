@@ -89,14 +89,20 @@ if st.button("鑑定結果を表示する"):
         # 1. 時間計算 (JST -> UT)
         dt_local = datetime.combine(birth_date, birth_time)
         dt_ut = dt_local - timedelta(hours=9)
+        
+        # ユリウス日の計算
         jd_ut = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, dt_ut.hour + dt_ut.minute/60.0)
 
-        # 2. アヤナムシャ設定 (Lahiri)
-        swe.set_sid_mode(1, 0, 0)
+        # 2. アヤナムシャ設定 (Lahiri) を強制適用
+        swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
         
         # 3. ラグナ算出
+        # 都道府県データから座標取得
         lat, lon = PREFECTURES[pref_name]
-        res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=64)
+        
+        # 【重要】flags=swe.FLG_SIDEREAL (64) を明示的に指定してサイドリアル計算を強制
+        # これにより西洋式の星座（天秤座）ではなくインド式の星座（乙女座）が算出されます
+        res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=swe.FLG_SIDEREAL)
         lagna_deg = res[1][0]
 
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
@@ -108,8 +114,8 @@ if st.button("鑑定結果を表示する"):
         st.markdown("---")
         st.balloons()
         
-        # BASEショップのURL（ご自身のものに書き換えてください）
-        base_shop_url = "https://lagnablue.base.shop/" 
+        # BASEショップのURL
+        base_shop_url = "https://yourshop.base.shop/" 
 
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
@@ -127,15 +133,11 @@ if st.button("鑑定結果を表示する"):
                 <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px; opacity: 0.8;">
                     ✨ さらに詳しく知りたい方はこちら ✨
                 </p>
-                <a href="{base_shop_url}" target="_blank" style="text-decoration: none;">
+                <a href="{{base_shop_url}}" target="_blank" style="text-decoration: none;">
                     <div style="
                         background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
-                        color: white; 
-                        padding: 10px 24px; 
-                        border-radius: 50px;
-                        font-weight: bold; 
-                        font-size: 15px; 
-                        display: inline-block;
+                        color: white; padding: 10px 24px; border-radius: 50px;
+                        font-weight: bold; font-size: 15px; display: inline-block;
                         box-shadow: 0 3px 10px rgba(155, 142, 199, 0.3);
                     ">
                         個人鑑定を申し込む
@@ -145,4 +147,4 @@ if st.button("鑑定結果を表示する"):
         """, unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"エラーが発生しました: {e}")
+        st.error(f"エラーが発生しました: {{e}}")
