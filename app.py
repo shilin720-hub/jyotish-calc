@@ -13,46 +13,30 @@ st.set_page_config(page_title="Lagna Blueprint", page_icon="✨")
 
 st.markdown(f"""
     <style>
-    /* 1. 基本設定（ヘッダー・フッター非表示など） */
+    /* 1. 基本設定 */
     header[data-testid="stHeader"], footer, #MainMenu {{ display: none !important; }}
     .stAppToolbar {{ display: none !important; }}
     .block-container {{ padding-top: 2rem !important; }}
     .stApp {{ background-color: {C_BG}; }}
     h1, h2, h3, label {{ color: {C_ACCENT} !important; font-weight: bold; }}
 
-    /* 2. 鑑定するボタンの設定 */
+    /* 2. 【重要】入力ボックスの文字色を強制固定（スマホ対策） */
+    input, .stSelectbox div[data-baseweb="select"] {{
+        color: {C_ACCENT} !important;
+        -webkit-text-fill-color: {C_ACCENT} !important;
+        background-color: white !important;
+    }}
+    /* 入力欄のプレースホルダーや数値も白くならないように設定 */
+    div[data-baseweb="input"] {{
+        background-color: white !important;
+    }}
+    
+    /* 3. ボタンの設定 */
     .stButton>button {{
         background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
         color: white !important; border-radius: 25px; border: none;
         height: 3.5em; width: 100%; font-weight: bold;
     }}
-
-    /* 3. 入力フォームの背景色 */
-    .stDateInput div, .stTimeInput div, .stSelectbox div {{ 
-        background-color: white !important; 
-    }}
-
-    /* --- ここから追加：スマホ対策 --- */
-    /* 入力フォームのラベル（誕生日などの文字）をスマホでも強制表示 */
-    label[data-testid="stWidgetLabel"] {{
-        display: block !important;
-        visibility: visible !important;
-        color: {C_ACCENT} !important;
-    }}
-
-    /* スマホで入力欄が小さくなりすぎないよう調整 */
-    @media (max-width: 640px) {{
-        .block-container {{
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-        }}
-        /* 入力時の文字サイズを調整（ズーム防止） */
-        input {{
-            font-size: 16px !important;
-        }}
-    }}
-    /* --- 追加ここまで --- */
-    
     </style>
     """, unsafe_allow_html=True)
 
@@ -117,6 +101,24 @@ if st.button("鑑定結果を表示する"):
         # --- 7. 結果表示 ---
         st.markdown("---")
         st.balloons()
+
+        # 12星座別のアドバイスメッセージ
+        messages = {
+            "牡羊座": "情熱的で、新しい一歩を踏み出す勇気を持っています。",
+            "牡牛座": "穏やかで、心地よい豊かさを育む才能があります。",
+            "双子座": "知的好奇心が旺盛で、軽やかに情報を繋ぐ力があります。",
+            "蟹座": "共感力が高く、大切な居場所を守り育てる愛を持っています。",
+            "獅子座": "堂々とした華やかさと、周囲を照らすリーダーシップがあります。",
+            "乙女座": "緻密で分析力に優れ、物事を完璧に整える力を持っています。",
+            "天秤座": "調和を重んじ、洗練された美意識とバランス感覚があります。",
+            "蠍座": "深い洞察力と、一つのことを極める強い精神力があります。",
+            "射手座": "自由を愛し、高い理想を求めて冒険する精神を持っています。",
+            "山羊座": "責任感が強く、地道な努力で大きな成果を成し遂げる力があります。",
+            "水瓶座": "独創的で、未来を見据えた新しい視点を持っています。",
+            "魚座": "感受性が豊かで、境界を超えて全てを包み込む優しさがあります。"
+        }
+        sign_name = zodiac_signs[sign_index]
+        advice = messages.get(sign_name, "")
         
         # ショップURL (ご自身のアドレスに変更してください)
         shop_url = "https://lagnablue.base.shop/" 
@@ -127,21 +129,19 @@ if st.button("鑑定結果を表示する"):
                         box-shadow: 0 10px 25px rgba(155, 142, 199, 0.2); margin-bottom: 20px;">
                 <p style="color: {C_MAIN}; font-weight: bold; margin-bottom: 5px;">【鑑定結果】</p>
                 <p style="color: {C_ACCENT}; margin: 0;">あなたのラグナは</p>
-                <h1 style="color: {C_ACCENT}; font-size: 42px; margin: 10px 0;">{zodiac_signs[sign_index]}</h1>
+                <h1 style="color: {C_ACCENT}; font-size: 42px; margin: 10px 0;">{sign_name}</h1>
                 <p style="color: {C_ACCENT}; font-size: 18px; margin: 0;">
                     {int(deg_in_sign)}度 {int((deg_in_sign % 1) * 60)}分
                 </p>
-           </div>
-            
-            <div style="text-align: center; margin-top: 20px; color: {C_ACCENT};">
-                <p style="font-size: 15px; margin-bottom: 5px;">🌙 <b>ラグナから見るあなたの強み</b></p>
-                <p style="font-size: 14px; opacity: 0.9;">
-                    自分の魂の役割を知ることで、運命の歯車が回り始めます。
-                </p>
-                <div style="display: inline-block; margin-top: 10px; padding: 5px 15px; border-radius: 15px; background-color: {C_MAIN}22; border: 1px solid {C_MAIN};">
-                    <span style="font-size: 13px;">ラッキーカラー：パールホワイト、淡いパープル</span>
-                </div>
             </div>
+            
+            <div style="text-align: center; margin: 30px 10px; color: {C_ACCENT};">
+                <p style="font-size: 15px; margin-bottom: 8px;">🌙 <b>{sign_name}のあなたへのメッセージ</b></p>
+                <p style="font-size: 14px; line-height: 1.6; opacity: 0.9;">
+                    {advice}
+                </p>
+            </div>
+            
             <div style="text-align: center; margin-top: 40px;">
                 <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px; opacity: 0.8;">
                     ✨ さらに詳しく知りたい方はこちら ✨
@@ -157,15 +157,10 @@ if st.button("鑑定結果を表示する"):
                         display: inline-block;
                         box-shadow: 0 4px 12px rgba(155, 142, 199, 0.4);
                         text-decoration: none !important;
-                        /* ブラウザの自動色付けを徹底的に上書き */
                         -webkit-text-fill-color: {C_BG} !important;
-                        -moz-text-fill-color: {C_BG} !important;
                     ">
                         個人鑑定を申し込む
                     </span>
                 </a>
             </div>
         """, unsafe_allow_html=True)
-
-    except Exception as e:
-        st.error(f"エラーが発生しました。入力内容を確認してください。")
