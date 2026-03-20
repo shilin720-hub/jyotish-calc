@@ -4,7 +4,6 @@ from datetime import datetime, time, timedelta
 
 # --- 1. カラーパレット ---
 C_BG = "#F2EAE0"
-C_SUB = "#B4D3D9"
 C_MAIN = "#BDA6CE"
 C_ACCENT = "#9B8EC7"
 
@@ -43,7 +42,7 @@ except:
     st.title("✨ Lagna Blueprint")
 
 # --- 4. 都道府県データ ---
-PREFECTURES = {
+PREFECTURES = {{
     "北海道": [43.0641, 141.3469], "青森県": [40.8244, 140.7400], "岩手県": [39.7036, 141.1527],
     "宮城県": [38.2682, 140.8694], "秋田県": [39.7186, 140.1024], "山形県": [38.2554, 140.3396],
     "福島県": [37.7503, 140.4675], "茨城県": [36.3418, 140.4468], "栃木県": [36.5657, 139.8835],
@@ -60,7 +59,7 @@ PREFECTURES = {
     "福岡県": [33.6064, 130.4182], "佐賀県": [33.2635, 130.2998], "長崎県": [32.7448, 129.8737],
     "熊本県": [32.7898, 130.7417], "大分県": [33.2382, 131.6126], "宮崎県": [31.9111, 131.4239],
     "鹿児島県": [31.5967, 130.5571], "沖縄県": [26.2124, 127.6809]
-}
+}}
 
 # --- 5. 入力フォーム ---
 birth_date = st.date_input("1. 誕生日を選択", value=datetime(1980, 7, 20))
@@ -76,17 +75,11 @@ if st.button("鑑定結果を表示する"):
 
         lat, lon = PREFECTURES[pref_name]
         
-        # 精密計算：まず西洋式（トロピカル）のアセンダント角度を算出
-        # flags=0 で強制的に西洋式を指定
-        res = swe.houses(jd_ut, lat, lon, b'W')
-        tropical_asc = res[0][0] # 0番目がアセンダント
-        
-        #  Lahiriアヤナムシャの値を取得
+        # 精密計算：フラグ64(SIDEREAL)を使用して、直接インド式のアセンダント角度を算出
         swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
-        ayanamsa = swe.get_ayanamsa_ex(jd_ut, 64)[0]
-        
-        # 手動で引き算してサイドリアル角度を出す
-        lagna_deg = (tropical_asc - ayanamsa) % 360
+        # houses_ex の戻り値の [1][0] がアセンダント（ラグナ）の角度です
+        res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=64)
+        lagna_deg = res[1][0]
 
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
@@ -144,4 +137,4 @@ if st.button("鑑定結果を表示する"):
         """, unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"エラーが発生しました: {e}")
+        st.error(f"エラーが発生しました: {{e}}")
