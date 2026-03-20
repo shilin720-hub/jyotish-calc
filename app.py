@@ -69,7 +69,8 @@ birth_date = st.date_input(
     min_value=datetime(1950, 1, 1),
     max_value=today
 )
-birth_time = st.time_input("2. 出生時刻", value=time(12, 00))
+# step=60 を入れることで1分単位の選択になります
+birth_time = st.time_input("2. 出生時刻", value=time(10, 58), step=60)
 pref_name = st.selectbox("3. 出生地", list(PREFECTURES.keys()))
 
 # --- 6. 鑑定ロジック ---
