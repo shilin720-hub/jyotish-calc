@@ -104,16 +104,21 @@ if st.button("鑑定結果を表示する"):
                 </p>
             </div>
             
-            <div style="text-align: center; margin-top: 60px;">
+           <div style="text-align: center; margin-top: 60px;">
                 <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px; opacity: 0.8;">
                     ✨ さらに詳しく知りたい方はこちら ✨
                 </p>
-                <a href="{shop_url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                <a href="{shop_url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">
                     <span style="
                         background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
-                        color: white !important; padding: 12px 30px; border-radius: 50px;
-                        font-weight: bold; font-size: 16px; display: inline-block;
-                        box-shadow: 0 4px 12px rgba(155, 142, 199, 0.3); text-decoration: none;
+                        color: #FFFFFF !important; 
+                        padding: 12px 30px; 
+                        border-radius: 50px;
+                        font-weight: 800; 
+                        font-size: 16px; 
+                        display: inline-block;
+                        box-shadow: 0 4px 12px rgba(155, 142, 199, 0.4);
+                        text-decoration: none !important;
                     ">
                         個人鑑定を申し込む
                     </span>
