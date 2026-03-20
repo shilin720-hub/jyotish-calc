@@ -11,7 +11,7 @@ C_ACCENT = "#9B8EC7"
 # --- 2. デザイン (CSS) & ステルス設定 ---
 st.set_page_config(page_title="Lagna Blueprint", page_icon="✨")
 
-# CSS内の波括弧は二重 {{ }} にしてエラーを回避
+# CSS内の波括弧を二重 {{ }} にして計算干渉を防ぐ
 st.markdown(f"""
     <style>
     header[data-testid="stHeader"], footer, #MainMenu {{ display: none !important; }}
@@ -20,7 +20,6 @@ st.markdown(f"""
     .stApp {{ background-color: {C_BG}; }}
     h1, h2, h3, label {{ color: {C_ACCENT} !important; font-weight: bold; }}
 
-    /* スマホでの入力文字の色を強制固定 */
     input, .stSelectbox div[data-baseweb="select"] {{
         color: {C_ACCENT} !important;
         -webkit-text-fill-color: {C_ACCENT} !important;
@@ -44,7 +43,7 @@ try:
 except:
     st.title("✨ Lagna Blueprint")
 
-# --- 4. 都道府県データ（エラー回避のため辞書形式を避ける） ---
+# --- 4. 都道府県データ ---
 PREF_LIST = ["沖縄県", "東京都", "大阪府", "愛知県", "福岡県", "北海道", "青森県", "鹿児島県"]
 PREF_COORDS = [
     [26.2124, 127.6809], [35.6895, 139.6917], [34.6864, 135.5199],
@@ -64,22 +63,20 @@ if st.button("鑑定結果を表示する"):
         dt_ut = dt_local - timedelta(hours=9)
         jd_ut = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, dt_ut.hour + dt_ut.minute/60.0)
 
+        # 【超重要】サイドリアル（Lahiri）の設定を計算直前に強制固定
         swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
         
-        # 座標取得
         idx = PREF_LIST.index(pref_name)
         lat, lon = PREF_COORDS[idx]
         
+        # flags=64 (SIDEREAL) を確実に適用
         res = swe.houses_ex(jd_ut, lat, lon, b'W', flags=64)
         lagna_deg = res[1][0]
 
+        # 星座名とメッセージ
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
-        sign_index = int(lagna_deg / 30)
-        deg_in_sign = lagna_deg % 30
-        sign_name = zodiac_signs[sign_index]
-
-        # メッセージ（ミス防止のためリスト形式）
+        
         all_msgs = [
             "情熱的で、新しい一歩を踏み出す勇気を持っています。",
             "穏やかで、心地よい豊かさを育む才能があります。",
@@ -94,6 +91,10 @@ if st.button("鑑定結果を表示する"):
             "独創的で、未来を見据えた新しい視点を持っています。",
             "感受性が豊かな、全てを包み込む優しさがあります。"
         ]
+
+        sign_index = int(lagna_deg / 30)
+        deg_in_sign = lagna_deg % 30
+        sign_name = zodiac_signs[sign_index]
         advice = all_msgs[sign_index]
 
         st.markdown("---")
@@ -101,7 +102,6 @@ if st.button("鑑定結果を表示する"):
         
         shop_url = "https://yourshop.base.shop/" # ここをご自身のURLに変更
 
-        # HTML表示部分（波括弧の干渉を徹底排除）
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
                         border: 3px solid {C_MAIN}; text-align: center; margin-bottom: 20px;">
