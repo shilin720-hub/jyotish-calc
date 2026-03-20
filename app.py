@@ -62,8 +62,14 @@ PREFECTURES = {
 }
 
 # --- 5. 入力フォーム ---
-birth_date = st.date_input("1. 誕生日を選択", value=datetime(1980, 1, 1))
-birth_time = st.time_input("2. 出生時刻", value=time(12, 00))
+today = datetime.now()
+birth_date = st.date_input(
+    "1. 誕生日を選択", 
+    value=datetime(1980, 7, 20),
+    min_value=datetime(1950, 1, 1),
+    max_value=today
+)
+birth_time = st.time_input("2. 出生時刻", value=time(10, 58))
 pref_name = st.selectbox("3. 出生地", list(PREFECTURES.keys()))
 
 # --- 6. 鑑定ロジック ---
