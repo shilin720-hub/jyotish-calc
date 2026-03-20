@@ -8,7 +8,7 @@ C_SUB = "#B4D3D9"
 C_MAIN = "#BDA6CE"
 C_ACCENT = "#9B8EC7"
 
-# --- 2. デザイン (CSS) & ステルス設定 ---
+# --- 2. デザイン (CSS) ---
 st.set_page_config(page_title="Lagna Blueprint", page_icon="✨")
 
 st.markdown(f"""
@@ -76,16 +76,17 @@ if st.button("鑑定結果を表示する"):
 
         lat, lon = PREFECTURES[pref_name]
         
-        # 引き算ロジックで「乙女座」を確定させる
+        # 精密計算：まず西洋式（トロピカル）のアセンダント角度を算出
+        # flags=0 で強制的に西洋式を指定
+        res = swe.houses(jd_ut, lat, lon, b'W')
+        tropical_asc = res[0][0] # 0番目がアセンダント
+        
+        #  Lahiriアヤナムシャの値を取得
         swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
-        
-        # 西洋式の角度を取得
-        res = swe.houses_ex(jd_ut, lat, lon, b'W')
-        tropical_lagna = res[1][0]
-        
-        # 【修正箇所】引数に 64 (SIDEREAL) を追加してエラーを解消
         ayanamsa = swe.get_ayanamsa_ex(jd_ut, 64)[0]
-        lagna_deg = (tropical_lagna - ayanamsa) % 360
+        
+        # 手動で引き算してサイドリアル角度を出す
+        lagna_deg = (tropical_asc - ayanamsa) % 360
 
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
