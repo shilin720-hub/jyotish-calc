@@ -37,7 +37,7 @@ st.markdown(f"""
 
 # --- 3. ヘッダー画像 ---
 try:
-    st.image("Lagna blueprint.png", use_container_width=True)
+    st.image("LagnaTOP.png", use_container_width=True)
 except:
     st.title("✨ Lagna Blueprint")
 
@@ -62,8 +62,8 @@ PREFECTURES = {
 }
 
 # --- 5. 入力フォーム ---
-birth_date = st.date_input("1. 誕生日を選択", value=datetime(1980, 7, 20))
-birth_time = st.time_input("2. 出生時刻", value=time(10, 58))
+birth_date = st.date_input("1. 誕生日を選択", value=datetime(1980, 1, 1))
+birth_time = st.time_input("2. 出生時刻", value=time(12, 00))
 pref_name = st.selectbox("3. 出生地", list(PREFECTURES.keys()))
 
 # --- 6. 鑑定ロジック ---
