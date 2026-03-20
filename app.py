@@ -11,6 +11,7 @@ C_ACCENT = "#9B8EC7"
 # --- 2. デザイン (CSS) & ステルス設定 ---
 st.set_page_config(page_title="Lagna Blueprint", page_icon="✨")
 
+# CSS内の波括弧を二重 {{ }} にすることで、f文字列との干渉を完全に防ぎます
 st.markdown(f"""
     <style>
     header[data-testid="stHeader"], footer, #MainMenu {{ display: none !important; }}
@@ -19,6 +20,7 @@ st.markdown(f"""
     .stApp {{ background-color: {C_BG}; }}
     h1, h2, h3, label {{ color: {C_ACCENT} !important; font-weight: bold; }}
 
+    /* スマホでの入力文字の色を強制固定 */
     input, .stSelectbox div[data-baseweb="select"] {{
         color: {C_ACCENT} !important;
         -webkit-text-fill-color: {C_ACCENT} !important;
@@ -38,22 +40,34 @@ st.markdown(f"""
 
 # --- 3. ヘッダー画像 ---
 try:
-    st.image("LagnaTOP.png", use_container_width=True)
+    st.image("Lagna blueprint.png", use_container_width=True)
 except:
     st.title("✨ Lagna Blueprint")
 
-# --- 4. 都道府県データ ---
-PREF_LIST = ["沖縄県", "東京都", "大阪府", "愛知県", "福岡県", "北海道", "青森県", "鹿児島県"]
-PREF_COORDS = [
-    [26.2124, 127.6809], [35.6895, 139.6917], [34.6864, 135.5199],
-    [35.1802, 136.9066], [33.6064, 130.4182], [43.0641, 141.3469],
-    [40.8244, 140.7400], [31.5967, 130.5571]
-]
+# --- 4. 都道府県データ (辞書形式で安定化) ---
+PREFECTURES = {{
+    "北海道": [43.0641, 141.3469], "青森県": [40.8244, 140.7400], "岩手県": [39.7036, 141.1527],
+    "宮城県": [38.2682, 140.8694], "秋田県": [39.7186, 140.1024], "山形県": [38.2554, 140.3396],
+    "福島県": [37.7503, 140.4675], "茨城県": [36.3418, 140.4468], "栃木県": [36.5657, 139.8835],
+    "群馬県": [36.3912, 139.0602], "埼玉県": [35.8570, 139.6490], "千葉県": [35.6051, 140.1232],
+    "東京都": [35.6895, 139.6917], "神奈川県": [35.4478, 139.6425], "新潟県": [37.9022, 139.0236],
+    "富山県": [36.6953, 137.2113], "石川県": [36.5947, 136.6256], "福井県": [36.0652, 136.2216],
+    "山梨県": [35.6640, 138.5683], "長野県": [36.6513, 138.1810], "岐阜県": [35.3912, 136.7222],
+    "静岡県": [34.9769, 138.3831], "愛知県": [35.1802, 136.9066], "三重県": [34.7303, 136.5086],
+    "滋賀県": [35.0045, 135.8686], "京都府": [35.0210, 135.7556], "大阪府": [34.6864, 135.5199],
+    "兵庫県": [34.6913, 135.1830], "奈良県": [34.6853, 135.8328], "和歌山県": [34.2260, 135.1675],
+    "鳥取県": [35.5036, 134.2383], "島根県": [35.4722, 133.0505], "岡山県": [34.6618, 133.9344],
+    "広島県": [34.3963, 132.4594], "山口県": [34.1858, 131.4706], "徳島県": [34.0657, 134.5593],
+    "香川県": [34.3401, 134.0433], "愛媛県": [33.8416, 132.7657], "高知県": [33.5597, 133.5311],
+    "福岡県": [33.6064, 130.4182], "佐賀県": [33.2635, 130.2998], "長崎県": [32.7448, 129.8737],
+    "熊本県": [32.7898, 130.7417], "大分県": [33.2382, 131.6126], "宮崎県": [31.9111, 131.4239],
+    "鹿児島県": [31.5967, 130.5571], "沖縄県": [26.2124, 127.6809]
+}}
 
 # --- 5. 入力フォーム ---
 birth_date = st.date_input("1. 誕生日を選択", value=datetime(1980, 7, 20))
 birth_time = st.time_input("2. 出生時刻", value=time(10, 58))
-pref_name = st.selectbox("3. 出生地", PREF_LIST)
+pref_name = st.selectbox("3. 出生地", list(PREFECTURES.keys()))
 
 # --- 6. 鑑定ロジック ---
 if st.button("鑑定結果を表示する"):
@@ -62,23 +76,17 @@ if st.button("鑑定結果を表示する"):
         dt_ut = dt_local - timedelta(hours=9)
         jd_ut = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, dt_ut.hour + dt_ut.minute/60.0)
 
-        # A. 座標取得
-        idx = PREF_LIST.index(pref_name)
-        lat, lon = PREF_COORDS[idx]
+        lat, lon = PREFECTURES[pref_name]
         
-        # B. 西洋式（トロピカル）でラグナを算出
-        swe.set_tid_mode(swe.SIDM_FAGAN_BRADLEY, 0, 0) # ダミー設定でリセット
-        res = swe.houses_ex(jd_ut, lat, lon, b'W') # フラグなし＝西洋式
+        # 手動補正ロジックで「天秤座への逆戻り」を物理的に阻止
+        swe.set_tid_mode(swe.SIDM_LAHIRI, 0, 0)
+        res = swe.houses_ex(jd_ut, lat, lon, b'W')
         tropical_lagna = res[1][0]
         
-        # C. その瞬間のアヤナムシャ（Lahiri）を取得
-        swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
+        # アヤナムシャを直接取得して引き算
         ayanamsa = swe.get_ayanamsa_ex(jd_ut)[0]
-        
-        # D. 手動補正：西洋式ラグナ － アヤナムシャ ＝ インド式ラグナ
         lagna_deg = (tropical_lagna - ayanamsa) % 360
 
-        # 星座名とメッセージ
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
         
@@ -105,7 +113,7 @@ if st.button("鑑定結果を表示する"):
         st.markdown("---")
         st.balloons()
         
-        shop_url = "https://yourshop.base.shop/" # ここをご自身のURLに変更
+        shop_url = "https://yourshop.base.shop/"
 
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
