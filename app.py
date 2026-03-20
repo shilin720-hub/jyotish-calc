@@ -69,22 +69,28 @@ pref_name = st.selectbox("3. 出生地", list(PREFECTURES.keys()))
 # --- 6. 鑑定ロジック ---
 if st.button("鑑定結果を表示する"):
     try:
+        # 時差の計算 (日本は +9時間)
         dt_local = datetime.combine(birth_date, birth_time)
         dt_ut = dt_local - timedelta(hours=9)
+        
+        # ユリウス日の算出 (ET/UT)
         jd_ut = swe.julday(dt_ut.year, dt_ut.month, dt_ut.day, dt_ut.hour + dt_ut.minute/60.0)
-
+        
+        # 緯度経度の取得
         lat, lon = PREFECTURES[pref_name]
         
-        # ハウスシステムをPlacidus(P)に固定して、西洋式アセンダントを算出
-        res = swe.houses(jd_ut, lat, lon, b'P')
-        tropical_asc = res[0][0] 
+        # 1. まず西洋式(Tropical)のアセンダントを算出
+        # flag = 0 (西洋式) を明示
+        res_houses = swe.houses(jd_ut, lat, lon, b'P')
+        tropical_asc = res_houses[0][0] # アセンダント
         
-        # ラヒリ・アヤナムシャを取得
+        # 2. Lahiriアヤナムシャの値を強制的に引き出す
+        # sid_modeをセットしてから get_ayanamsa で数値を取得
         swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
-        ayanamsa = swe.get_ayanamsa_ex(jd_ut, 64)[0]
+        ayanamsa_val = swe.get_ayanamsa(jd_ut)
         
-        # 数値的に引き算（360度法）
-        lagna_deg = (tropical_asc - ayanamsa) % 360
+        # 3. インド式角度 ＝ 西洋式角度 － アヤナムシャ
+        lagna_deg = (tropical_asc - ayanamsa_val) % 360
 
         zodiac_signs = ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", 
                         "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"]
@@ -104,7 +110,6 @@ if st.button("鑑定結果を表示する"):
             "感受性が豊かな、全てを包み込む優しさがあります。"
         ]
 
-        # 角度から星座のインデックスを決定
         sign_index = int(lagna_deg / 30)
         deg_in_sign = lagna_deg % 30
         sign_name = zodiac_signs[sign_index]
@@ -157,4 +162,4 @@ if st.button("鑑定結果を表示する"):
         """, unsafe_allow_html=True)
 
     except Exception as e:
-        st.error(f"エラーが発生しました: {{e}}")
+        st.error(f"鑑定中にエラーが発生しました。時間を空けて再度お試しください。")
