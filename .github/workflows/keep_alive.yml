@@ -10,15 +10,18 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    # ここで書き込み権限をプログラムからも要求します
     permissions:
-      contents: write # ここで明示的に書き込み権限を付与します
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Dummy commit to keep alive
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git commit --allow-empty -m "Keep-alive trigger"
-          git push
+          git push origin main
