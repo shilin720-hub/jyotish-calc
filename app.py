@@ -104,15 +104,12 @@ if st.button("鑑定結果を表示する"):
         deg_in_sign = lagna_deg % 30
         sign_name = zodiac_signs[sign_index]
 
-        # 未定義によるエラーを防ぐため変数を初期化
-        advice = f"{sign_name}のエネルギーが今のあなたを導いています。"
-
         st.markdown("---")
         st.balloons()
         
         shop_url = "https://lagnablue.base.shop/"
 
-        # 文字列の閉じ忘れと波括弧のエラーを修正
+        # メッセージを削除し、結果とボタンのみを表示
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
                         border: 3px solid {C_MAIN}; text-align: center; margin-bottom: 20px;">
@@ -124,14 +121,7 @@ if st.button("鑑定結果を表示する"):
                 </p>
             </div>
             
-            <div style="text-align: center; margin: 30px 10px; color: {C_ACCENT};">
-                <p style="font-size: 15px; margin-bottom: 8px;">🌙 <b>{sign_name}のあなたへのメッセージ</b></p>
-                <p style="font-size: 14px; line-height: 1.6; opacity: 0.9;">
-                    {advice}
-                </p>
-            </div>
-
-            <div style="text-align: center; margin-top: 40px;">
+            <div style="text-align: center; margin-top: 30px;">
                 <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px; opacity: 0.8;">
                     ✨ さらに詳しく知りたい方はこちら ✨
                 </p>
