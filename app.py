@@ -86,9 +86,9 @@ if st.button("鑑定結果を表示する"):
         lat, lon = PREFECTURES[pref_name]
         
         # 1. まず西洋式(Tropical)のアセンダントを算出
-        # swe.housesの戻り値は (cusps, ascmc) のタプルです
-        res_houses, res_ascmc = swe.houses(jd_ut, lat, lon, b'P')
-        tropical_asc = res_ascmc[0] # アセンダント
+        res_houses = swe.houses(jd_ut, lat, lon, b'P')
+        # swe.housesの戻り値形式に合わせて調整
+        tropical_asc = res_houses[0][0]
         
         # 2. Lahiriアヤナムシャの値を強制的に引き出す
         swe.set_sid_mode(swe.SIDM_LAHIRI, 0, 0)
@@ -104,18 +104,55 @@ if st.button("鑑定結果を表示する"):
         deg_in_sign = lagna_deg % 30
         sign_name = zodiac_signs[sign_index]
 
-        # 【修正】未定義だったadvice変数に空文字または定型文を代入
-        advice = f"{sign_name}の質を活かすことで、より良い流れが生まれます。"
+        # 未定義によるエラーを防ぐため変数を初期化
+        advice = f"{sign_name}のエネルギーが今のあなたを導いています。"
 
         st.markdown("---")
         st.balloons()
         
         shop_url = "https://lagnablue.base.shop/"
 
+        # 文字列の閉じ忘れと波括弧のエラーを修正
         st.markdown(f"""
             <div style="background-color: white; padding: 30px; border-radius: 20px; 
                         border: 3px solid {C_MAIN}; text-align: center; margin-bottom: 20px;">
                 <p style="color: {C_MAIN}; font-weight: bold; margin-bottom: 5px;">【鑑定結果】</p>
                 <p style="color: {C_ACCENT}; margin: 0;">あなたのラグナは</p>
                 <h1 style="color: {C_ACCENT}; font-size: 42px; margin: 10px 0;">{sign_name}</h1>
-                <p style="color
+                <p style="color: {C_ACCENT}; font-size: 18px; margin: 0;">
+                    {int(deg_in_sign)}度 {int((deg_in_sign % 1) * 60)}分
+                </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 10px; color: {C_ACCENT};">
+                <p style="font-size: 15px; margin-bottom: 8px;">🌙 <b>{sign_name}のあなたへのメッセージ</b></p>
+                <p style="font-size: 14px; line-height: 1.6; opacity: 0.9;">
+                    {advice}
+                </p>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <p style="color: {C_ACCENT}; font-size: 13px; margin-bottom: 12px; opacity: 0.8;">
+                    ✨ さらに詳しく知りたい方はこちら ✨
+                </p>
+                <a href="{shop_url}" target="_blank" rel="noopener noreferrer" style="text-decoration: none !important;">
+                    <span style="
+                        background: linear-gradient(135deg, {C_MAIN}, {C_ACCENT});
+                        color: {C_BG} !important; 
+                        padding: 12px 30px; 
+                        border-radius: 50px;
+                        font-weight: 800; 
+                        font-size: 16px; 
+                        display: inline-block;
+                        box-shadow: 0 4px 12px rgba(155, 142, 199, 0.4);
+                        text-decoration: none !important;
+                        -webkit-text-fill-color: {C_BG} !important;
+                    ">
+                        個人鑑定を申し込む
+                    </span>
+                </a>
+            </div>
+        """, unsafe_allow_html=True)
+
+    except Exception as e:
+        st.error("鑑定中にエラーが発生しました。入力を確認してください。")
